@@ -60,8 +60,8 @@ all: main-build
 main-build: ProposalTest.elf secondary-outputs
 
 # Tool invocations
-ProposalTest.elf ProposalTest.map: $(OBJS) $(USER_OBJS) /home/eric/STM32CubeIDE/workspace_1.10.1/ProposalTest/STM32F072R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "ProposalTest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/home/eric/STM32CubeIDE/workspace_1.10.1/ProposalTest/STM32F072R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ProposalTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+ProposalTest.elf ProposalTest.map: $(OBJS) $(USER_OBJS) C:\Users\Eric\Desktop\stm32_proposal\STM32F072R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "ProposalTest.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\Eric\Desktop\stm32_proposal\STM32F072R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="ProposalTest.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
