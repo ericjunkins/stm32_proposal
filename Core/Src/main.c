@@ -41,7 +41,25 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+int STATE			= 0x00;
+int FORCE 		= 0x00;
 
+int LOCK1_TRIGGER = 0x01;
+int LOCK2_TRIGGER = 0x02;
+int LOCK3_TRIGGER = 0x04;
+int LOCK4_TRIGGER = 0x08;
+int IRIS_LOW 		= 0x10;
+int IRIS_HIGH 	= 0x20;
+int Z_LOW 		= 0x40;
+int Z_HIGH 		= 0x80;
+
+int IRIS_CLOSE 	= 0x01;
+int IRIS_OPEN 	= 0x02;
+int THETA_CW		= 0x04;
+int THETA_CCW		= 0x08;
+int Z_LOWER		= 0x10;
+int Z_HIGHER		= 0x20;
+int RESET_STATE 		= 0x40;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,7 +98,26 @@ int spin_motor(int motor, int dir){
 		default:
 			break;
 	}
+	return 0;
 }
+
+void lock_check(){
+	if (HAL_GPIO_ReadPin(LOCK1_GPIO_Port, LOCK1_Pin)){
+		HAL_GPIO_WritePin(EXT_LED1_GPIO_Port, EXT_LED1_Pin, GPIO_PIN_SET);
+		STATE |= 1 << 0;
+	} else if (HAL_GPIO_ReadPin(LOCK2_GPIO_Port, LOCK2_Pin)){
+		HAL_GPIO_WritePin(EXT_LED2_GPIO_Port, EXT_LED2_Pin, GPIO_PIN_SET);
+		STATE |= 1 << 1;
+	} else if (HAL_GPIO_ReadPin(LOCK3_GPIO_Port, LOCK3_Pin)){
+		HAL_GPIO_WritePin(EXT_LED3_GPIO_Port, EXT_LED3_Pin, GPIO_PIN_SET);
+		STATE |= 1 << 2;
+	} else if (HAL_GPIO_ReadPin(LOCK4_GPIO_Port, LOCK4_Pin)){
+		HAL_GPIO_WritePin(EXT_LED4_GPIO_Port, EXT_LED4_Pin, GPIO_PIN_SET);
+		STATE |= 1 << 3;
+	}
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -90,25 +127,6 @@ int spin_motor(int motor, int dir){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int STATE			= 0x00;
-  int FORCE 		= 0x00;
-
-  int LOCK1_TRIGGER = 0x01;
-  int LOCK2_TRIGGER = 0x02;
-  int LOCK3_TRIGGER = 0x04;
-  int LOCK4_TRIGGER = 0x08;
-  int IRIS_LOW 		= 0x10;
-  int IRIS_HIGH 	= 0x20;
-  int Z_LOW 		= 0x40;
-  int Z_HIGH 		= 0x80;
-
-  int IRIS_CLOSE 	= 0x01;
-  int IRIS_OPEN 	= 0x02;
-  int THETA_CW		= 0x04;
-  int THETA_CCW		= 0x08;
-  int Z_LOWER		= 0x10;
-  int Z_HIGHER		= 0x20;
-  int RESET 		= 0x40;
 
   /* USER CODE END 1 */
 
@@ -143,17 +161,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (HAL_GPIO_ReadPin(IRIS_FORCE_LOW_GPIO_Port, IRIS_FORCE_LOW_Pin)){
-		  spin_motor(1, 0);
-		  HAL_GPIO_TogglePin(INT_LED2_GPIO_Port, INT_LED2_Pin);
+		if (HAL_GPIO_ReadPin(IRIS_FORCE_LOW_GPIO_Port, IRIS_FORCE_LOW_Pin)){
+			spin_motor(1, 0);
 
-	  }
-	  else if (HAL_GPIO_ReadPin(IRIS_FORCE_HIGH_GPIO_Port, IRIS_FORCE_HIGH_Pin)){
-		  spin_motor(1, 1);
-		  HAL_GPIO_TogglePin(INT_LED1_GPIO_Port, INT_LED1_Pin);
-	  }
+		}
+		else if (HAL_GPIO_ReadPin(IRIS_FORCE_HIGH_GPIO_Port, IRIS_FORCE_HIGH_Pin)){
+			spin_motor(1, 1);
+		}
 
-	  HAL_Delay(10);
+		if (HAL_GPIO_ReadPin(THETA_FORCE_CCW_GPIO_Port, THETA_FORCE_CCW_Pin)){
+			spin_motor(2, 0);
+
+		}
+		else if (HAL_GPIO_ReadPin(THETA_FORCE_CW_GPIO_Port, THETA_FORCE_CW_Pin)){
+			spin_motor(2, 1);
+		}
+
+		lock_check();
+		if ((STATE & (1 << 0)) && (STATE & (1 << 1)) && (STATE & (1 << 2)) && (STATE & (1 << 3))){
+			HAL_GPIO_WritePin(BLUE_GPIO_Port, GREEN_Pin, GPIO_PIN_SET);
+		}
+		HAL_Delay(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

@@ -137,6 +137,7 @@ void Error_Handler(void);
 #define INT_LED5_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 int spin_motor(int, int);
+void lock_check();
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
