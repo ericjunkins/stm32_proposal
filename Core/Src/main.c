@@ -72,7 +72,7 @@ static void MX_GPIO_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int spin_motor(int motor, int dir){
-	int delay_ms = 2;
+	int delay_ms = 1;
 	switch(motor){
 		case 1:
 			 HAL_GPIO_WritePin(DIR1_GPIO_Port, DIR1_Pin, (dir ? GPIO_PIN_SET : GPIO_PIN_RESET));
@@ -133,7 +133,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+                                                                       HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -155,12 +155,17 @@ int main(void)
   HAL_GPIO_WritePin(INT_LED4_GPIO_Port, INT_LED4_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(INT_LED5_GPIO_Port, INT_LED5_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(STEPPER_SLEEP_GPIO_Port, STEPPER_SLEEP_Pin, GPIO_PIN_SET);
+
+  HAL_GPIO_WritePin(MS1_GPIO_Port, MS1_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(MS2_GPIO_Port, MS2_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(MS3_GPIO_Port, MS3_Pin, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
 		if (HAL_GPIO_ReadPin(IRIS_FORCE_LOW_GPIO_Port, IRIS_FORCE_LOW_Pin)){
 			spin_motor(1, 0);
 
@@ -177,11 +182,29 @@ int main(void)
 			spin_motor(2, 1);
 		}
 
-		lock_check();
-		if ((STATE & (1 << 0)) && (STATE & (1 << 1)) && (STATE & (1 << 2)) && (STATE & (1 << 3))){
-			HAL_GPIO_WritePin(BLUE_GPIO_Port, GREEN_Pin, GPIO_PIN_SET);
-		}
-		HAL_Delay(10);
+	  if (STATE < 0x0F){
+		  lock_check();
+//	  } else if ((STATE & (1 << 0)) && (STATE & (1 << 1)) && (STATE & (1 << 2)) && (STATE & (1 << 3))){
+	  } else if ((STATE & 0xFF) == 0x0F){
+		  HAL_GPIO_WritePin(BLUE_GPIO_Port, GREEN_Pin, GPIO_PIN_SET);
+		  if (! HAL_GPIO_ReadPin(IRIS_LIM_HIGH_GPIO_Port, IRIS_LIM_HIGH_Pin)){
+			  spin_motor(1, 1);
+		  } else {
+			  STATE |= (1 << 4);
+
+		  }
+	  } else if ((STATE & 0xFF) == 0x1F){
+		  HAL_GPIO_TogglePin(INT_LED2_GPIO_Port, INT_LED2_Pin);
+		  if (! HAL_GPIO_ReadPin(Z_LIM_LOW_GPIO_Port, Z_LIM_LOW_Pin)){
+			  spin_motor(2, 1);
+		  } else {
+			  STATE |= (1 << 5);
+		  }
+	  } else if (( STATE & 0xFF) == 0x3F){
+		  HAL_GPIO_WritePin(BLUE_GPIO_Port, BLUE_Pin, GPIO_PIN_SET);
+	  }
+
+	  HAL_Delay(5);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
